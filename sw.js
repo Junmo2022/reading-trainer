@@ -1,12 +1,12 @@
 // sw.js
-const CACHE = 'reading-trainer-v1';
+const CACHE = 'reading-trainer-v2';
 const ASSETS = [
   './', './index.html', './manifest.json',
   './css/base.css', './css/child.css', './css/parent.css',
   './js/db.js', './js/store.js', './js/skills.js', './js/scheduler.js',
   './js/diagnoser.js', './js/rewards.js', './js/updater.js', './js/charts.js',
   './js/router.js', './js/child-ui.js', './js/parent-ui.js', './js/app.js',
-  './data/question-bank/manifest.json', './data/question-bank/chinese-g34-v1.json',
+  './data/question-bank/manifest.json', './data/question-bank/chinese-g34-v2.json',
 ];
 
 self.addEventListener('install', e => {

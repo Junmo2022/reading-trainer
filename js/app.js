@@ -23,12 +23,13 @@ import { renderParentDashboard } from './parent-ui.js';
 
 /**
  * 确保题库已加载到 IndexedDB。
- * 首次运行时从静态文件 fetch chinese-g34-v1.json 并写入。
+ * 首次运行或版本过旧时从静态文件 fetch chinese-g34-v2.json 并写入。
  */
 async function ensureQuestionBankLoaded() {
   let bank = await getLatestQuestionBank('chinese');
-  if (!bank) {
-    const res = await fetch('./data/question-bank/chinese-g34-v1.json');
+  // 无题库 或 版本低于 2026.07.002 → 加载最新
+  if (!bank || !bank.version || bank.version < '2026.07.002') {
+    const res = await fetch('./data/question-bank/chinese-g34-v2.json');
     if (!res.ok) throw new Error('题库加载失败: HTTP ' + res.status);
     const data = await res.json();
     await saveQuestionBank(data);
