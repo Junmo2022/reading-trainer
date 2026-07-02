@@ -1,0 +1,8 @@
+{
+  "version": "2026.07.001",
+  "subject": "chinese",
+  "gradeRange": ["3", "4"],
+  "files": ["chinese-g34-v1.json"],
+  "updateTime": "2026-07-02",
+  "passageCount": 8
+}
