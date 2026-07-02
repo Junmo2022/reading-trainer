@@ -10,10 +10,60 @@
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/child.css">
   <link rel="stylesheet" href="css/parent.css">
+  <!-- 预加载 JS 模块，减少串行等待 -->
+  <link rel="modulepreload" href="js/db.js">
+  <link rel="modulepreload" href="js/store.js">
+  <link rel="modulepreload" href="js/skills.js">
+  <link rel="modulepreload" href="js/scheduler.js">
+  <link rel="modulepreload" href="js/diagnoser.js">
+  <link rel="modulepreload" href="js/rewards.js">
+  <link rel="modulepreload" href="js/updater.js">
+  <link rel="modulepreload" href="js/charts.js">
+  <link rel="modulepreload" href="js/router.js">
+  <link rel="modulepreload" href="js/child-ui.js">
+  <link rel="modulepreload" href="js/parent-ui.js">
   <title>阅读训练营</title>
+  <style>
+    #loading-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: #666;
+      font-size: 16px;
+      gap: 16px;
+    }
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #E0E0E0;
+      border-top-color: #4A90D9;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <div id="loading-screen">
+      <div class="loading-spinner"></div>
+      <div>正在加载阅读训练营...</div>
+    </div>
+  </div>
   <script type="module" src="js/app.js"></script>
+  <script>
+    // 超时检测：15秒后如果还在加载，显示重试提示
+    setTimeout(function() {
+      var loading = document.getElementById('loading-screen');
+      if (loading && loading.querySelector('.loading-spinner')) {
+        loading.innerHTML = '<div style="text-align:center;padding:20px;">' +
+          '<p style="margin-bottom:12px;">加载时间较长，请检查网络连接</p>' +
+          '<button onclick="location.reload()" style="padding:10px 24px;font-size:16px;border:none;border-radius:8px;background:#4A90D9;color:#fff;cursor:pointer;">重试</button>' +
+          '</div>';
+      }
+    }, 15000);
+  </script>
 </body>
 </html>

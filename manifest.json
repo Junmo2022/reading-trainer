@@ -2,6 +2,7 @@
   "name": "阅读训练营",
   "short_name": "阅读训练",
   "description": "小学语文阅读理解针对性训练工具",
+  "scope": "./",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",

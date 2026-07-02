@@ -44,23 +44,31 @@ async function ensureQuestionBankLoaded() {
  * - 不需要：应用技能衰减，渲染孩子主界面。
  */
 async function renderHome(el) {
-  let profile = await getProfile('chinese');
-  if (!profile) profile = createEmptyProfile('chinese');
+  try {
+    let profile = await getProfile('chinese');
+    if (!profile) profile = createEmptyProfile('chinese');
 
-  if (isDiagnosisDue(profile)) {
-    renderDiagnosisIntro(el);
-    return;
+    if (isDiagnosisDue(profile)) {
+      renderDiagnosisIntro(el);
+      return;
+    }
+
+    const decayed = applyDecay(profile);
+    // 衰减后有变化才回写，避免无谓写库
+    if (JSON.stringify(decayed) !== JSON.stringify(profile)) {
+      await saveProfile(decayed);
+    }
+
+    const gamification = await getGamification();
+    const config = await getConfig();
+    await renderChildHome(el, decayed, gamification, config);
+  } catch (err) {
+    console.error('首页渲染失败:', err);
+    el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#666;padding:20px;text-align:center;">' +
+      '<p style="margin-bottom:16px;">加载失败，可能是网络问题</p>' +
+      '<button onclick="location.reload()" style="padding:10px 24px;font-size:16px;border:none;border-radius:8px;background:#4A90D9;color:#fff;cursor:pointer;">重试</button>' +
+      '</div>';
   }
-
-  const decayed = applyDecay(profile);
-  // 衰减后有变化才回写，避免无谓写库
-  if (JSON.stringify(decayed) !== JSON.stringify(profile)) {
-    await saveProfile(decayed);
-  }
-
-  const gamification = await getGamification();
-  const config = await getConfig();
-  await renderChildHome(el, decayed, gamification, config);
 }
 
 /**
@@ -77,6 +85,19 @@ function registerServiceWorker() {
 }
 
 /**
+ * 显示错误信息（而非白屏）。
+ */
+function showError(msg) {
+  const app = document.getElementById('app');
+  if (app) {
+    app.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#666;padding:20px;text-align:center;">' +
+      '<p style="margin-bottom:16px;">' + msg + '</p>' +
+      '<button onclick="location.reload()" style="padding:10px 24px;font-size:16px;border:none;border-radius:8px;background:#4A90D9;color:#fff;cursor:pointer;">重试</button>' +
+      '</div>';
+  }
+}
+
+/**
  * 应用初始化入口。
  */
 async function init() {
@@ -84,11 +105,16 @@ async function init() {
     await openDB();
   } catch (err) {
     console.error('数据库初始化失败:', err);
+    showError('数据库初始化失败，请重试');
+    return;
   }
+
+  // 题库加载不阻塞路由启动
   try {
     await ensureQuestionBankLoaded();
   } catch (err) {
     console.error('题库加载失败:', err);
+    // 不立即报错，让路由启动后由 renderHome 处理
   }
 
   registerServiceWorker();
@@ -101,4 +127,12 @@ async function init() {
   startRouter();
 }
 
-init();
+// 全局错误捕获，防止白屏
+window.addEventListener('error', (e) => {
+  console.error('全局错误:', e.error || e.message);
+});
+
+init().catch(err => {
+  console.error('初始化失败:', err);
+  showError('应用初始化失败，请重试');
+});
